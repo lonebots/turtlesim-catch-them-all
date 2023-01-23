@@ -1,14 +1,19 @@
 #!/usr/bin/python3
 
+# ros-related
 import rclpy
 from rclpy.node import Node
 
+# common-python
+from functools import partial
 import math
 
+# interface
 from turtlesim.msg import Pose
 from geometry_msgs.msg import Twist
 from turtlesim_ctall_interfaces.msg import Turtle
 from turtlesim_ctall_interfaces.msg import TurtleArray
+from turtlesim_ctall_interfaces.srv import CatchTurtle
 
 
 class TurtleControllerNode(Node):
@@ -45,11 +50,29 @@ class TurtleControllerNode(Node):
             self.loop_frequency_, self.control_loop)
         self.get_logger().info("turtle_controller node started")
 
-        # client to kill turtle 
-        self.kill_turtle_client_ = self.create_client()
-        
-    def call_kill_turtle_service(self,turtle_name) :
-        pass
+        # client to kill turtle
+        self.catch_turtle_client_ = self.create_client(
+            CatchTurtle, 'catch_turtle')
+
+    def call_catch_turtle_service(self, turtle_name):
+        request = CatchTurtle.Request()
+        request.name = turtle_name
+
+        future = self.catch_turtle_client_.call_async(request)
+
+        future.add_done_callback(
+            partial(self.callback_catch_turtle, name=turtle_name))
+
+    def callback_catch_turtle(self, furture, name):
+        try:
+            response = furture.result()
+            if (response.success):
+                self.get_logger().info(f"turtle {name} caught succesfully!")
+            else:
+                self.get_logger().warn(f"turtle {name} no caught, ERROR")
+        except Exception as e:
+            self.get_logger().error(
+                f"Exception in calling kill turtle service : {e}")
 
     def callback_alive_turtles(self, msg):
         if len(msg.turtles) > 0:
@@ -100,9 +123,8 @@ class TurtleControllerNode(Node):
             msg.linear.x = 0.0
             msg.angular.z = 0.0
 
-            # remove the old target from the list 
-
-
+            # remove the old target from the list
+            self.call_catch_turtle_service(self.turtle_to_catch_.name)
 
         self.turtle_cmd_vel_publisher_.publish(msg)
 
