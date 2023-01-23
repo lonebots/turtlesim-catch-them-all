@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>turtilesim_ctall</name>
+  <name>turtlesim_ctall</name>
   <version>0.0.0</version>
   <description>turtle_catch_them_all_nodes</description>
   <maintainer email="jishnusurajila@gmail.com">jishnu</maintainer>

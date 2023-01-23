@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'turtilesim_ctall'
+package_name = 'turtlesim_ctall'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            
+
         ],
     },
 )
