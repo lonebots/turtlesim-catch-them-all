@@ -11,8 +11,8 @@
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
-  <depend>turtlesim_ctall</depend>
-  <depend>turtlesim</depend>
+  <exec_depend>turtlesim_ctall</exec_depend>
+  <exec_depend>turtlesim</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
