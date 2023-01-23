@@ -45,6 +45,12 @@ class TurtleControllerNode(Node):
             self.loop_frequency_, self.control_loop)
         self.get_logger().info("turtle_controller node started")
 
+        # client to kill turtle 
+        self.kill_turtle_client_ = self.create_client()
+        
+    def call_kill_turtle_service(self,turtle_name) :
+        pass
+
     def callback_alive_turtles(self, msg):
         if len(msg.turtles) > 0:
             self.turtle_to_catch_ = msg.turtles[0]
@@ -94,8 +100,9 @@ class TurtleControllerNode(Node):
             msg.linear.x = 0.0
             msg.angular.z = 0.0
 
-            # change the target & remove the old target from the list 
-            
+            # remove the old target from the list 
+
+
 
         self.turtle_cmd_vel_publisher_.publish(msg)
 
