@@ -15,6 +15,7 @@ from turtlesim.srv import Kill
 from turtlesim_ctall_interfaces.msg import Turtle
 from turtlesim_ctall_interfaces.msg import TurtleArray
 from turtlesim_ctall_interfaces.srv import CatchTurtle
+from std_srvs.srv import Empty
 
 
 class TurtleSpawnerNode(Node):
@@ -61,6 +62,9 @@ class TurtleSpawnerNode(Node):
         theta = random.uniform(0.0, 2*math.pi)
         self.call_spawn_server(turtle_name=name, x=x,
                                y=y, theta=theta)  # spawn call
+
+    def clear_turtle_path(self):
+        self.call_clearpath_server()
 
     # spawn
 
@@ -123,8 +127,25 @@ class TurtleSpawnerNode(Node):
                 if turtle.name == turtle_name:
                     del self.alive_turtles_[i]
                     self.publish_alive_turtle()
+                    self.clear_turtle_path()
                     break
 
+        except Exception as e:
+            self.get_logger().error(f"Exception in service call : {e}")
+
+    # clear path
+
+    def call_clearpath_server(self):
+        client = self.create_client(Empty, '/clear')
+        request = Empty.Request()
+        future = client.call_async(request)
+        future.add_done_callback(
+            self.callback_clearpath_server
+        )
+
+    def callback_clearpath_server(self, future):
+        try:
+            future.result()
         except Exception as e:
             self.get_logger().error(f"Exception in service call : {e}")
 
