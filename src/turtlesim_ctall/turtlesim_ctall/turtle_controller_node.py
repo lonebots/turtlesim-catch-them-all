@@ -48,17 +48,20 @@ class TurtleControllerNode(Node):
         # timer for control loop
         self.control_loop_timer_ = self.create_timer(
             self.loop_frequency_, self.control_loop)
+
         self.get_logger().info("turtle_controller node started")
 
-        # client to kill turtle
-        self.catch_turtle_client_ = self.create_client(
-            CatchTurtle, 'catch_turtle')
-
     def call_catch_turtle_service(self, turtle_name):
+        # client to kill turtle
+        client = self.create_client(
+            CatchTurtle, 'catch_turtle')
+        while not client.wait_for_service(1.0):
+            self.logger().warn("waiting for server")
+
         request = CatchTurtle.Request()
         request.name = turtle_name
 
-        future = self.catch_turtle_client_.call_async(request)
+        future = client.call_async(request)
 
         future.add_done_callback(
             partial(self.callback_catch_turtle, name=turtle_name))
@@ -69,7 +72,7 @@ class TurtleControllerNode(Node):
             if (response.success):
                 self.get_logger().info(f"turtle {name} caught succesfully!")
             else:
-                self.get_logger().warn(f"turtle {name} no caught, ERROR")
+                self.get_logger().error(f"turtle {name} no caught, ERROR")
         except Exception as e:
             self.get_logger().error(
                 f"Exception in calling kill turtle service : {e}")
@@ -125,11 +128,9 @@ class TurtleControllerNode(Node):
 
             # remove the old target from the list
             self.call_catch_turtle_service(self.turtle_to_catch_.name)
+            self.turtle_to_catch_ = None  # else ERROR : tried to kiil turtle that doesn't exist
 
         self.turtle_cmd_vel_publisher_.publish(msg)
-
-    def catch_turtle(self, alive_turtle):
-        pass
 
 
 def main(args=None):
