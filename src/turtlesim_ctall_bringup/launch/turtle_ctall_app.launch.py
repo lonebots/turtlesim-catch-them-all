@@ -17,7 +17,10 @@ def generate_launch_description():
 
     turtle_spawner = Node(
         package="turtlesim_ctall",
-        executable="turtle_spawner"
+        executable="turtle_spawner",
+        parameters=[
+            {"spawn_frequency": 2.0}
+        ]
     )
 
     ld.add_action(turtlesim_node)

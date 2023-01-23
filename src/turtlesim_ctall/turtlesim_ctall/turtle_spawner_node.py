@@ -23,13 +23,17 @@ class TurtleSpawnerNode(Node):
         super().__init__("turtle_spawner")
         self.turtle_name_prefix_ = "turtle"
 
+        # parameter
+        self.declare_parameter('spawn_frequency', 2.0)
+
         # variables
         self.turtle_counter_ = 1  # turtle1 is master and it is already spawned
         self.alive_turtles_ = []
+        self.spawn_frequency_ = self.get_parameter('spawn_frequency').value
 
         # timer for spawning turtle
         self.turtle_spawn_timer_ = self.create_timer(
-            2.0, self.spawn_new_turtle)
+            1.0/self.spawn_frequency_, self.spawn_new_turtle)
 
         # publish alive turtles
         self.alive_turtles_publisher_ = self.create_publisher(TurtleArray,
