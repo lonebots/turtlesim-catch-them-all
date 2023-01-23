@@ -7,6 +7,8 @@ import random
 import math
 
 from turtlesim.srv import Spawn
+from turtlesim_ctall_interfaces.msg import Turtle
+from turtlesim_ctall_interfaces.msg import TurtleArray
 
 
 class TurtleSpawnerNode(Node):
@@ -16,13 +18,22 @@ class TurtleSpawnerNode(Node):
 
         # variables
         self.turtle_counter_ = 0
-        self.alive_turtle_ = []
+        self.alive_turtles_ = []
 
         # timer for spawning turtle
         self.turtle_spawn_timer_ = self.create_timer(
             2.0, self.spawn_new_turtle)
 
+        # publish alive turtles
+        self.alive_turtles_publisher_ = self.create_publisher(TurtleArray,
+                                                              'alive_turtles', 10)
+
         self.get_logger().info("turtle_spawner node started")
+
+    def publish_alive_turtle(self,):
+        msg = TurtleArray()
+        msg.turtles = self.alive_turtles_
+        self.alive_turtles_publisher_.publish(msg)
 
     def spawn_new_turtle(self):
         # set name
@@ -58,6 +69,17 @@ class TurtleSpawnerNode(Node):
             response = future.result()
             if response.name != "":
                 self.get_logger().info(f"turtle {response.name } is now live!")
+
+                # add it to list of alive turtles
+                new_turtle = Turtle()
+                new_turtle.name = response.name
+                new_turtle.x = x
+                new_turtle.y = y
+                new_turtle.theta = theta
+
+                self.alive_turtles_.append(new_turtle)
+                self.publish_alive_turtle()
+
         except Exception as e:
             self.get_logger().error(f"Exception in service call : {e}")
 
