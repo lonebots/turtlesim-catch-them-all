@@ -24,7 +24,7 @@ class TurtleSpawnerNode(Node):
         self.turtle_name_prefix_ = "turtle"
 
         # variables
-        self.turtle_counter_ = 0
+        self.turtle_counter_ = 1  # turtle1 is master and it is already spawned
         self.alive_turtles_ = []
 
         # timer for spawning turtle
