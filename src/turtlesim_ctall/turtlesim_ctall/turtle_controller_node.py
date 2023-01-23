@@ -7,15 +7,15 @@ import math
 
 from turtlesim.msg import Pose
 from geometry_msgs.msg import Twist
+from turtlesim_ctall_interfaces.msg import Turtle
+from turtlesim_ctall_interfaces.msg import TurtleArray
 
 
 class TurtleControllerNode(Node):
     def __init__(self) -> None:
         super().__init__("turtle_controller")
 
-        # target
-        self.target_x_ = 2.0
-        self.target_y_ = 6.0
+        self.turtle_to_catch_ = None
 
         # attributes
         self.pose_ = None
@@ -30,6 +30,11 @@ class TurtleControllerNode(Node):
         self.turtle_pose_subscriber_ = self.create_subscription(
             Pose, '/turtle1/pose', self.callback_turtle_pose, 10)
 
+        # subscription to /alive_turtles
+        self.alive_turtles_subscriber_ = self.create_subscription(
+            TurtleArray, '/alive_turtles', self.callback_alive_turtles, 10
+        )
+
         # publisher to /turtle1/cmd_vel
         self.turtle_cmd_vel_publisher_ = self.create_publisher(
             Twist, '/turtle1/cmd_vel', 10
@@ -40,16 +45,20 @@ class TurtleControllerNode(Node):
             self.loop_frequency_, self.control_loop)
         self.get_logger().info("turtle_controller node started")
 
+    def callback_alive_turtles(self, msg):
+        if len(msg.turtles) > 0:
+            self.turtle_to_catch_ = msg.turtles[0]
+
     def callback_turtle_pose(self, msg):
-        self.get_logger().info(f"turtle position : {msg}")
+        # self.get_logger().info(f"turtle position : {msg}")
         self.pose_ = msg
 
     def control_loop(self):
-        if self.pose_ == None:
+        if self.pose_ == None or self.turtle_to_catch_ is None:
             return
 
-        dist_x = self.target_x_ - self.pose_.x
-        dist_y = self.target_y_ - self.pose_.y
+        dist_x = self.turtle_to_catch_.x - self.pose_.x
+        dist_y = self.turtle_to_catch_.y - self.pose_.y
         distance = math.sqrt(pow(dist_x, 2)+pow(dist_y, 2))
 
         # create twist message
@@ -75,7 +84,7 @@ class TurtleControllerNode(Node):
             # make angle within 0 to 2pi
             if dif_theta > math.pi:
                 dif_theta -= 2*math.pi
-            elif dif_theta < -math.pi :
+            elif dif_theta < -math.pi:
                 dif_theta += 2*math.pi
 
             msg.angular.z = 6*dif_theta
@@ -84,6 +93,9 @@ class TurtleControllerNode(Node):
             # make them 0
             msg.linear.x = 0.0
             msg.angular.z = 0.0
+
+            # change the target & remove the old target from the list 
+            
 
         self.turtle_cmd_vel_publisher_.publish(msg)
 
