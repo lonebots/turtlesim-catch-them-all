@@ -15,7 +15,7 @@ set(srv
 )
 
 set(msg
-
+ "srv/CatchTurtle.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
